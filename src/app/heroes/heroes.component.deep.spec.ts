@@ -288,7 +288,7 @@ describe('Heroes Component (Deep Test)', () => {
   it('RouterLink: Should have the correct route for the first hero', () => {
     mockHeroService.getHeroes.and.returnValue(of(HEROES));
     fixture.detectChanges();
-    
+
     const heroComponents = fixture.debugElement.queryAll(
       By.directive(HeroComponent)
     );
@@ -310,8 +310,8 @@ describe('Heroes Component (Deep Test)', () => {
     heroComponents[0].query(By.css('a')).triggerEventHandler('click', null);
 
     /*
-    * So we will finally check the routerLink value after the click
-    */
-   expect(routerLink.navigatedTo).toBe('/detail/1')
+     * So we will finally check the routerLink value after the click
+     */
+    expect(routerLink.navigatedTo).toBe('/detail/1');
   });
 });

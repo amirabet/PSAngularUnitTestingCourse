@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick, waitForAsync } from '@angular/core/testing';
 import { HeroDetailComponent } from './hero-detail.component';
 import { ActivatedRoute } from '@angular/router';
 import { HeroService } from '../hero.service';
@@ -81,4 +81,79 @@ describe('Hero Detail Component', () => {
       'SUPER DUDE'
     );
   });
+
+  /*
+  * Here we test an async function thats using a debounce method.
+  * To mathc with debounce method we use a setTimeout methos with a
+  * fixed delay to wait for debouncing finalization.
+  * 
+  * NOTICE that a "done" parameter is added to test callback.
+  * The "done()" raises a flag when is called that allows us to 
+  * run any asyncronous code
+  */
+  it('Async method test with fixed Timeout: should call updateHero when save is called', (done)=>{
+    mockHeroService.updateHero.and.returnValue(of({}));
+    fixture.detectChanges();
+
+    fixture.componentInstance.save();
+
+    /*
+    * To correctly check the test we have to wait more than 250ms to launch expect() method.
+    * This Timeout corresponds to debounce function delay.
+    * We also call the done() parameter.
+    */
+    setTimeout(() => {
+      expect(mockHeroService.updateHero).toHaveBeenCalled();
+      done();
+    }, 300)
+  })
+
+  /*
+  * In this other variation of async function testing we use
+  * a different approach: without setTimeout and "done" parameter.
+  * The fakeAsync method wraps all test's callback
+  */
+  it('Async method test with fakeAsync and tick: should call updateHero when save is called', fakeAsync(()=>{
+    mockHeroService.updateHero.and.returnValue(of({}));
+    fixture.detectChanges();
+
+    fixture.componentInstance.save();
+
+    /*
+    * We use tick() method to delay expect execution 250ms
+    */
+    //tick(250);
+    /*
+    * We have also the more universal flush that will wait to
+    * any ongoing async methods to be executed, saving us from
+    * setting manually a certaint timeout waiting and making
+    * tests more universal
+    */
+    flush();
+
+    expect(mockHeroService.updateHero).toHaveBeenCalled();
+  }));
+
+  /*
+  * Finally we use this variations aimed to test promsies,
+  * using waitForAsync instead of fakeAsync wrapper.
+  * 
+  * To wait to promise resolution we have whenStable() as a
+  * fixture method
+  */
+  it('Async method test with promises: should call updateHero when savePromised is called', waitForAsync(()=>{
+    mockHeroService.updateHero.and.returnValue(of({}));
+    fixture.detectChanges();
+
+    fixture.componentInstance.savePromised();
+
+    /*
+    * We use whenStable, wich is a fixture method that it itself a promise.
+    * This promise will be resolved when the testing promise is resolved
+    */
+    fixture.whenStable().then(() => {
+      expect(mockHeroService.updateHero).toHaveBeenCalled();
+    })
+  }));
+
 });
